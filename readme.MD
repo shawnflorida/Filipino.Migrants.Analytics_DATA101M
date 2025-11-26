@@ -68,11 +68,6 @@ Filipino-Migrators-Dashboard/
 
 4. Open your browser at `http://localhost:8501` to explore the dashboard.
 
-```bash
-git clone https://github.com/your-org/filipino-migrators-dashboard.git
-cd filipino-migrators-dashboard
-```
-
 2. **Install dependencies**
 
 ```bash
