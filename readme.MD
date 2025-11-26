@@ -102,4 +102,4 @@ streamlit run dashboards/main.py
 ---
 
 ## 📄 License
-[MIT License](LICENSE)
+[https://github.com/shawnflorida/DataViz101M---Final-Project/blob/main/LICENSE](LICENSE)
