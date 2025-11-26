@@ -84,10 +84,6 @@ pip install -r requirements.txt
 ```bash
 streamlit run dashboards/main.py
 ```
-## 📄 License
-
-[MIT License](LICENSE)t `http://localhost:8501` to explore the dashboard.
-
 ---
 
 ## 🛠 Technologies Used
