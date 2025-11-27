@@ -119,6 +119,15 @@ class DataProcessor:
             'Post Graduate': 'post_graduate',
             'Vocational': 'vocational_graduate',
             'Elementary': 'elementary_graduate',
+            'College Level': 'college_level',
+            'High School Level': 'high_school_level',
+            'Elementary Level': 'elementary_level',
+            'No Formal Education': 'no_formal_education',
+            'Non-Formal Education': 'non-formal_education',
+            'Not Reported': 'not_reported_/_no_response',
+            'Not of Schooling Age': 'not_of_schooling_age',
+            'Post Graduate Level': 'post_graduate_level',
+            'Vocational Level': 'vocational_level'
         }
         
         self.all_age_options = ['15 - 19', '20 - 24', '25 - 29', '30 - 34', '35 - 39', 
@@ -240,6 +249,15 @@ class FilterManager:
             placeholder="All education levels"
         )
         
+        # #Countries Filter
+        # countries_filter = st.sidebar.multiselect(
+        #     "Countries Destination",
+        #     self.processor.all_countries_options,
+        #     default=self.session_state.countries,
+        #     help = "Filter by destination of countries. Leave empty to include all countries",
+        #     placeholder="All destination countries in record"
+        # )
+        
         # Age group filter
         age_filter = st.sidebar.multiselect(
             "👥 Age Groups",
@@ -258,7 +276,6 @@ class FilterManager:
             placeholder="All occupations"
         )
         
-        # Update session state
         # Update session state when button is clicked
         if st.sidebar.button("Apply Filters", use_container_width=True, help="Apply selected filters to dashboard"):
             st.session_state.education_filter = education_filter
@@ -576,7 +593,7 @@ class Dashboard:
         
         # Metrics
         # st.markdown("<div class='stats-row'>", unsafe_allow_html=True)
-        col1, col2, col3, col4, col5, col6 = st.columns(6)
+        col1, col2, col3, col4, col5 = st.columns(5)
         
         with col1:
             delta_total = None
@@ -610,15 +627,15 @@ class Dashboard:
             </div>
             """, unsafe_allow_html=True)
         
-        with col4:
-            st.markdown(f"""
-            <div style='text-align: center; padding: 1rem;'>
-                <p style='color: #94a3b8; font-size: 0.9rem; margin: 0; text-transform: uppercase;'>College Grad</p>
-                <p style='color: #fbbf24; font-size: 2rem; font-weight: 700; margin: 0.5rem 0;'>{college_pct:.1f}%</p>
-            </div>
-            """, unsafe_allow_html=True)
+        # with col4:
+        #     st.markdown(f"""
+        #     <div style='text-align: center; padding: 1rem;'>
+        #         <p style='color: #94a3b8; font-size: 0.9rem; margin: 0; text-transform: uppercase;'>College Grad</p>
+        #         <p style='color: #fbbf24; font-size: 2rem; font-weight: 700; margin: 0.5rem 0;'>{college_pct:.1f}%</p>
+        #     </div>
+        #     """, unsafe_allow_html=True)
         
-        with col5:
+        with col4:
             st.markdown(f"""
             <div style='text-align: center; padding: 1rem;'>
                 <p style='color: #94a3b8; font-size: 0.9rem; margin: 0; text-transform: uppercase;'>Married</p>
@@ -626,7 +643,7 @@ class Dashboard:
             </div>
             """, unsafe_allow_html=True)
         
-        with col6:
+        with col5:
             if year_data['countries'] is not None:
                 top_dest = self.processor.country_mapping.get(
                     year_data['countries'][self.processor.get_country_columns()].idxmax(), 'N/A'
@@ -903,7 +920,7 @@ class Dashboard:
                         'High School': '#4ade80',
                         'Post Graduate': '#fbbf24',
                         'Vocational': '#a78bfa',
-                        'Elementary': '#f472b6'
+                        'Elementary': '#f472b6',
                     }
                     fig_educ = px.bar(
                         educ_df,
@@ -1209,7 +1226,7 @@ class Dashboard:
                     {'Based on the selected filters, there are' if filter_text else f'In {selected_year}, the Philippines had'} 
                     <strong style='color: #00d4ff;'>{filtered_data['totals']['migrants']:,.0f}</strong> overseas workers{' matching the criteria' if filter_text else ''}. 
                     The gender distribution shows <strong>{metrics_data['percentages']['female']:.1f}% female</strong> and <strong>{metrics_data['percentages']['male']:.1f}% male</strong> workers.
-                    About <strong style='color: #00d4ff;'>{metrics_data['percentages']['college']:.1f}%</strong> {'of these OFWs are' if filter_text else 'of OFWs are'} college graduates.
+                    # About <strong style='color: #00d4ff;'>{metrics_data['percentages']['college']:.1f}%</strong> {'of these OFWs are' if filter_text else 'of OFWs are'} college graduates.
                     The top destination remains <strong>{metrics_data['top_destination']}</strong>.
                 </p>
             </div>
