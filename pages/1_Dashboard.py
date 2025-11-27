@@ -6,7 +6,7 @@ import numpy as np
 
 # Set page config
 st.set_page_config(
-    page_title="Filipino Migrant Analytics 2000-2025",
+    page_title="Filipino Migrant Analytics Dashboard",
     page_icon="🇵🇭",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -1185,7 +1185,7 @@ class Dashboard:
         """Main method to run the dashboard"""
         # Header
         st.markdown("<h1>🇵🇭 FILIPINO MIGRANT ANALYTICS</h1>", unsafe_allow_html=True)
-        st.markdown("<p class='subtitle'>Comprehensive Analysis of Overseas Filipino Workers • 2000-2025</p>", unsafe_allow_html=True)
+        st.markdown("<p class='subtitle'>Comprehensive Analysis of Overseas Filipino Workers </p>", unsafe_allow_html=True)
         
         # Sidebar controls
         selected_year, show_comparison, comparison_year = self.filter_manager.render_sidebar_controls()
@@ -1227,7 +1227,7 @@ class Dashboard:
             <div style='text-align: center; padding: 2rem 0; color: #64748b;'>
                 <div style='font-size: 0.9rem;'>
                     <strong style='color: #00d4ff;'>Filipino Migrant Analytics Dashboard</strong> • 
-                    Tracking OFW Trends 2000-2025
+                    Tracking OFW Trends
                 </div>
                 <div style='font-size: 0.8rem; margin-top: 0.5rem;'>
                     Powered by Streamlit & Plotly
