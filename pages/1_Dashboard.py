@@ -772,7 +772,8 @@ class Dashboard:
                     text=map_df.apply(lambda row: f"{row['country']}<br>{row['migrants']:,.0f}", axis=1),
                     mode='text',
                     textfont=dict(color='white', size=10),
-                    showlegend=False
+                    showlegend=False,
+                    hoverinfo='none'
                 ))
                 st.plotly_chart(fig_map, use_container_width=True)
 
