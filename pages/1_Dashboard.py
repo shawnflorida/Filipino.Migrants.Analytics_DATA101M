@@ -309,23 +309,19 @@ class FilterManager:
             if col in self.processor.country_mapping
         ])
 
-        countries_filter = st.sidebar.multiselect(
-            "🌍 Filter Countries",
-            available_countries,
-            default=[],
-            help="Select specific countries to analyze. Leave empty to include all countries.",
-            placeholder="All countries"
-        )
+        # countries_filter = st.sidebar.multiselect(
+        #     "🌍 Filter Countries",
+        #     available_countries,
+        #     default=[],
+        #     help="Select specific countries to analyze. Leave empty to include all countries.",
+        #     placeholder="All countries"
+        # )
 
-        # Only show top N slider if no specific countries are selected
-        if not countries_filter:
-            top_n_countries = st.sidebar.slider(
-                "🏆 Top Destinations to Display",
-                min_value=5, max_value=20, value=st.session_state.top_n_countries
-            )
-        else:
-            # Show all selected countries
-            top_n_countries = len(countries_filter)
+        # Top N slider for destinations
+        top_n_countries = st.sidebar.slider(
+            "🏆 Top Destinations to Display",
+            min_value=5, max_value=20, value=st.session_state.top_n_countries
+        )
 
         chart_height = st.sidebar.slider(
             "📏 Chart Height (px)",
