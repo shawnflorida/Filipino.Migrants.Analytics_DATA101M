@@ -9,3 +9,4 @@ plotly.express
 plotly
 plotly-express
 matplotlib
+seaborn
