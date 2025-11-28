@@ -67,6 +67,9 @@ Filipino-Migrators-Dashboard/
 
 4. **Open your browser** at `http://localhost:8501` to explore the dashboard.
 
+
+5. Open the website online at https://dataviz101m---final-project-k2vml2puzghqjcvnhgbmae.streamlit.app/SupplementaryDataset
+
 ---
 
 ## 🛠 Technologies Used
