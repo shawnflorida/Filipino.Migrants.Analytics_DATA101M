@@ -1,6 +1,8 @@
 streamlit
 pandas
 numpy
+bokeh
+python-dateutil
 json
 geopandas
 plotly.express
