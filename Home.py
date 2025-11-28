@@ -22,21 +22,16 @@ st.markdown("""
         font-size: 1.2rem;
         text-align: center;
         color: #666;
-        margin-bottom: 2rem;
+        margin-bottom: 1rem;
     }
     </style>
 """, unsafe_allow_html=True)
 
 # Sidebar navigation
-st.sidebar.title("🇵🇭 Filipino Migrators Dashboard")
-st.sidebar.markdown("### Navigation")
-st.sidebar.markdown("---")
 st.sidebar.info("Select a page above to explore different aspects of Filipino migration data.")
 
 # Main content
-st.markdown('<p class="main-header">🇵🇭 Filipino Migrators Dashboard</p>', unsafe_allow_html=True)
-st.markdown('<p class="subtitle">Exploring Migration Patterns and Trends</p>', unsafe_allow_html=True)
-
+st.title('🇵🇭 Filipino Migrators Dashboard')
 # Introduction section
 col1, col2, col3 = st.columns(3)
 
@@ -66,4 +61,4 @@ Analyze trends, explore regional differences, and discover meaningful patterns i
 
 # Footer
 st.markdown("---")
-st.caption("Data Source: Filipino Migration Statistics | Last Updated: 2024")
+st.caption("Data Source: Filipino Migration Statistics | Last Updated: 2022")
