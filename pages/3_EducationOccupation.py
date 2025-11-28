@@ -149,45 +149,45 @@ if not educ_df.empty and not occ_df.empty:
 
 st.write("---")
 
-# --- BOTTOM 10 section ---
-st.subheader("Bottom 10 Educational Attainment * Occupation")
-if bottom_plot is not None:
-    st.pyplot(bottom_plot)
-    # Optional: Add download button for the plot
-    with st.expander("Download Options"):
-        col1, col2 = st.columns(2)
-        with col1:
-            if st.button("Save Bottom 10 Heatmap as PNG", key="save_bottom"):
-                bottom_plot.savefig(f"bottom_education_occupation_{year}.png",
-                                    dpi=300, bbox_inches='tight', facecolor='white')
-                st.success(f"Saved as bottom_education_occupation_{year}.png")
-        with col2:
-            st.download_button(
-                label="Download Bottom 10 Data as CSV",
-                data=bottom_joint_hm.to_csv(
-                    index=False) if bottom_joint_hm is not None else "",
-                file_name=f"bottom_education_occupation_{year}.csv",
-                mime="text/csv",
-                disabled=bottom_joint_hm is None
-            )
-else:
-    st.info("Bottom 10 heatmap not available for this year.")
+# # --- BOTTOM 10 section ---
+# st.subheader("Bottom 10 Educational Attainment * Occupation")
+# if bottom_plot is not None:
+#     st.pyplot(bottom_plot)
+#     # Optional: Add download button for the plot
+#     with st.expander("Download Options"):
+#         col1, col2 = st.columns(2)
+#         with col1:
+#             if st.button("Save Bottom 10 Heatmap as PNG", key="save_bottom"):
+#                 bottom_plot.savefig(f"bottom_education_occupation_{year}.png",
+#                                     dpi=300, bbox_inches='tight', facecolor='white')
+#                 st.success(f"Saved as bottom_education_occupation_{year}.png")
+#         with col2:
+#             st.download_button(
+#                 label="Download Bottom 10 Data as CSV",
+#                 data=bottom_joint_hm.to_csv(
+#                     index=False) if bottom_joint_hm is not None else "",
+#                 file_name=f"bottom_education_occupation_{year}.csv",
+#                 mime="text/csv",
+#                 disabled=bottom_joint_hm is None
+#             )
+# else:
+#     st.info("Bottom 10 heatmap not available for this year.")
 
-# Narrative for bottom
-if not educ_df.empty and not occ_df.empty:
-    strongest_b = get_strongest(bottom_joint)
-    if strongest_b:
-        educ_b, occ_b, pct_b = strongest_b
-        st.markdown(
-            f"### 📙 Key Insight — Bottom Group ({year})\n\n"
-            f"The strongest proportional Education × Occupation combination among the **Bottom 10 education levels** is:\n\n"
-            f"**➡ {educ_b.replace('_', ' ').title()} → {occ_b.replace('_', ' ').title()}**  \n"
-            f"**➡ {pct_explain(pct_b, total_emigrants_year)}**\n\n"
-            "**Interpretation:** Although these education levels are smaller contributors to total emigrants,\n"
-            "the heatmap reveals which occupation pathways are relatively more represented within these groups."
-        )
-    else:
-        st.info("No dominant cell found for Bottom 10 (possible zero totals).")
+# # Narrative for bottom
+# if not educ_df.empty and not occ_df.empty:
+#     strongest_b = get_strongest(bottom_joint)
+#     if strongest_b:
+#         educ_b, occ_b, pct_b = strongest_b
+#         st.markdown(
+#             f"### 📙 Key Insight — Bottom Group ({year})\n\n"
+#             f"The strongest proportional Education × Occupation combination among the **Bottom 10 education levels** is:\n\n"
+#             f"**➡ {educ_b.replace('_', ' ').title()} → {occ_b.replace('_', ' ').title()}**  \n"
+#             f"**➡ {pct_explain(pct_b, total_emigrants_year)}**\n\n"
+#             "**Interpretation:** Although these education levels are smaller contributors to total emigrants,\n"
+#             "the heatmap reveals which occupation pathways are relatively more represented within these groups."
+#         )
+#     else:
+#         st.info("No dominant cell found for Bottom 10 (possible zero totals).")
 
 # --- Data Tables (Optional: Show raw data) ---
 with st.expander("View Raw Data Tables"):
@@ -213,7 +213,6 @@ st.write(
     f"These Education × Occupation proportional patterns (for {year}) provide CFO with quick signals:\n\n"
     "- **Monitoring Skill Flow:** If highly educated groups concentrate in certain occupations (e.g., nurses, IT), CFO can anticipate domestic skill gaps.\n\n"
     "- **Identifying Underemployment Abroad:** A notable share of high-education migrants in lower-skilled occupations can imply credential recognition issues.\n\n"
-    "- **Targeted Support:** The bottom-10 heatmap helps identify vulnerable groups (minors, out-of-school youth, or 'no reported education') for targeted interventions.\n\n"
     "- **Program & Policy Use:** Use the per-year proportional heatmaps together with total emigrant counts (shown above) to size interventions — for example, a 5% cell in a year of 200k emigrants (~10k people) is operationally meaningful.\n\n"
     "The visualizations and narratives update automatically when you change the year, enabling evidence-based policy discussions."
 )
