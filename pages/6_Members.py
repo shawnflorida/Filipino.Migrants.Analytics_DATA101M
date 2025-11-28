@@ -203,21 +203,6 @@ def show_readme_page():
 
     st.markdown("""
     <div class="readme-section">
-    <h2>📂 Project Structure</h2>
-    <pre>
-    Filipino-Migrators-Dashboard/
-    │
-    ├── data/               # Raw and processed datasets
-    ├── pages/              # Streamlit apps and scripts  
-    ├── parsers/            # Exploratory data analysis notebooks
-    ├── requirements.txt    # Dependencies
-    └── README.md           # Project overview
-    </pre>
-    </div>
-    """, unsafe_allow_html=True)
-
-    st.markdown("""
-    <div class="readme-section">
     <h2>⚡ Getting Started</h2>
     <h3>Prerequisites</h3>
     <ul>
