@@ -8,3 +8,4 @@ geopandas
 plotly.express
 plotly
 plotly-express
+matplotlib
