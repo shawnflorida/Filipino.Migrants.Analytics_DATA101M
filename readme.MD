@@ -35,9 +35,8 @@ Explore historical migration data and uncover insights about demographic shifts 
 Filipino-Migrators-Dashboard/
 │
 ├─ data/               # Raw and processed datasets
-├─ dashboards/         # Streamlit apps and scripts
-├─ notebooks/          # Exploratory data analysis notebooks
-├─ src/                # Python modules
+├─ pages/              # Streamlit apps and scripts
+├─ parsers/            # Exploratory data analysis notebooks
 ├─ requirements.txt    # Dependencies
 └─ README.md           # Project overview
 ```
@@ -50,8 +49,7 @@ Filipino-Migrators-Dashboard/
 1. **Clone the repository**
 
 	```bash
-	git clone https://github.com/your-org/filipino-migrators-dashboard.git
-	cd filipino-migrators-dashboard
+	git clone https://github.com/shawnflorida/Filipino.Migrants.Analytics_DATA100M
 	```
 
 2. **Install dependencies**
@@ -63,7 +61,7 @@ Filipino-Migrators-Dashboard/
 3. **Run the Streamlit app**
 
 	```bash
-	streamlit run dashboards/main.py
+	streamlit run Home.py
 	```
 
 4. Open your browser at `http://localhost:8501` to explore the dashboard.
@@ -77,7 +75,7 @@ pip install -r requirements.txt
 3. **Run the Streamlit app**
 
 ```bash
-streamlit run dashboards/main.py
+streamlit run Home.py
 ```
 ---
 
@@ -88,12 +86,6 @@ streamlit run dashboards/main.py
 * **Streamlit** – Dashboard development
 * **Matplotlib & Plotly** – Visualizations
 * **Jupyter Notebook** – Exploratory data analysis
----
-
-## 📈 Screenshots
-
-*(Add relevant screenshots of your dashboard here for a more engaging README)*
-
 ---
 
 ## 📄 License
