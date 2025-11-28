@@ -4,3 +4,5 @@ numpy
 json
 geopandas
 plotly.express
+plotly
+plotly-express
