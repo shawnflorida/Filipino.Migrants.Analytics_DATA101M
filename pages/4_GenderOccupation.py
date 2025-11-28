@@ -212,41 +212,11 @@ occu_ts["Occupation"] = occu_ts["Occupation"].astype(str)
 # ------------------------
 # Multiselect filter and top N / show all logic
 # ------------------------
-# Enhanced occupation selector with quick actions and state sync
-options = sorted(occu_columns)
-
-# Initialize session state for selector
-if "occ_sel" not in st.session_state:
-    st.session_state["occ_sel"] = []
-
-with st.container():
-    st.write("Select occupations for the trend chart:")
-    col_a, col_b, col_c = st.columns([3, 1, 1])
-
-    with col_a:
-        st.multiselect(
-            "Select occupations (leave empty to show top N)",
-            options=options,
-            default=st.session_state["occ_sel"],
-            key="occ_sel",
-            placeholder="Type to search occupations..."
-        )
-
-    # Compute latest-year top 5 for quick select
-    latest_year = occu_df["year"].max()
-    occ_year_latest = occu_df[occu_df["year"] == latest_year].drop(columns="year")
-    top5_latest = occ_year_latest.iloc[0].sort_values(ascending=False).head(5).index.tolist()
-
-    with col_b:
-        if st.button("Top 5 (latest year)"):
-            st.session_state["occ_sel"] = [o for o in top5_latest if o in options]
-
-    with col_c:
-        if st.button("Clear selection"):
-            st.session_state["occ_sel"] = []
-
-# Use the unified selection downstream
-occupation_multiselect = st.session_state["occ_sel"]
+occupation_multiselect = st.multiselect(
+    "Select occupations (leave empty to show top N)",
+    options=sorted(occu_columns),
+    default=[]
+)
 
 show_all = st.checkbox("Show all occupations", value=True)
 
