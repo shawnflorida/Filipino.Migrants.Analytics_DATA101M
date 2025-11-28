@@ -79,7 +79,6 @@ def show_members_page():
             "icon": "📈",
             "color": "#4ECDC4"
         },
-     
         {
             "name": "RAPHEL ANGELO MERCADO",
             "contributions": ["MigrationData.py"],
@@ -139,5 +138,154 @@ def show_members_page():
     """, unsafe_allow_html=True)
 
 
-show_members_page()
+def show_readme_page():
+    st.set_page_config(layout="wide", page_title="Project Documentation")
 
+    st.markdown("""
+    <style>
+    .readme-section {
+        # background: white;
+        padding: 2rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+        margin-bottom: 1rem;
+        # border-left: 4px solid #667eea;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+    st.title("🇵🇭 Filipino Migrators Dashboard")
+
+    st.markdown("""
+    <div class="readme-section">
+    <h2>📖 Project Overview</h2>
+    <p>A <strong>Streamlit web application</strong> that visualizes <strong>Filipino migration patterns and trends</strong> across countries, age groups, education levels, occupations, gender, and civil status. Explore historical migration data and uncover insights about demographic shifts over time.</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("""
+    <div class="readme-section">
+    <h2>🚀 Features</h2>
+    <ul>
+    <li>Interactive <strong>migration visualizations</strong> by country, age, education, occupation, gender, and civil status</li>
+    <li><strong>Year-wise trends</strong> and comparisons</li>
+    <li><strong>Searchable and filterable dashboards</strong> for focused insights</li>
+    <li><strong>Downloadable datasets</strong> for offline analysis</li>
+    <li>Built using <strong>Python, Pandas, Streamlit, and Plotly/Matplotlib</strong></li>
+    </ul>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("""
+    <div class="readme-section">
+    <h2>👨‍💻 Team Members – Group 3</h2>
+    """, unsafe_allow_html=True)
+
+    team_data = {
+        "Name": [
+            "Raphael Matthew Azucena",
+            "Shawn Michael Mana-ay",
+            "Aaron Pagayunan",
+            "Josebelle Delgado",
+            "Raphel Angelo Mercado"
+        ],
+        "Role / Contribution": [
+            "Supplementary Data Development",
+            "Data Processing & Lead Development",
+            "Demographics Visualization Development",
+            "Education and Occupation Visualization",
+            "Choropleth for Migration Location"
+        ]
+    }
+
+    st.table(team_data)
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    st.markdown("""
+    <div class="readme-section">
+    <h2>📂 Project Structure</h2>
+    <pre>
+    Filipino-Migrators-Dashboard/
+    │
+    ├── data/               # Raw and processed datasets
+    ├── pages/              # Streamlit apps and scripts  
+    ├── parsers/            # Exploratory data analysis notebooks
+    ├── requirements.txt    # Dependencies
+    └── README.md           # Project overview
+    </pre>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("""
+    <div class="readme-section">
+    <h2>⚡ Getting Started</h2>
+    <h3>Prerequisites</h3>
+    <ul>
+    <li>Python 3.7+</li>
+    <li>pip (Python package manager)</li>
+    </ul>
+    
+    <h3>Installation & Setup</h3>
+    <ol>
+    <li><strong>Clone the repository</strong>
+    <pre><code>git clone https://github.com/shawnflorida/Filipino.Migrants.Analytics_DATA101M
+    cd Filipino.Migrants.Analytics_DATA101M</code></pre>
+    </li>
+    <li><strong>Install dependencies</strong>
+    <pre><code>pip install -r requirements.txt</code></pre>
+    </li>
+    <li><strong>Run the Streamlit app</strong>
+    <pre><code>streamlit run Home.py</code></pre>
+    </li>
+    <li><strong>Open your browser</strong> at <code>http://localhost:8501</code> to explore the dashboard.</li>
+    <li><strong>Open the website online</strong> at <a href="https://dataviz101m---final-project-k2vml2puzghqjcvnhgbmae.streamlit.app/">Streamlit App</a></li>
+    </ol>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("""
+    <div class="readme-section">
+    <h2>🛠 Technologies Used</h2>
+    <ul>
+    <li><strong>Python</strong> – Data processing & analysis</li>
+    <li><strong>Pandas & NumPy</strong> – Data wrangling and manipulation</li>
+    <li><strong>Streamlit</strong> – Dashboard development</li>
+    <li><strong>Matplotlib & Plotly</strong> – Visualizations</li>
+    <li><strong>Jupyter Notebook</strong> – Exploratory data analysis</li>
+    </ul>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("""
+    <div class="readme-section">
+    <h2>📄 License</h2>
+    <p>This project is licensed under the MIT License - see the <a href="https://github.com/shawnflorida/DataViz101M---Final-Project/blob/main/LICENSE">LICENSE</a> file for details.</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("""
+    <div class="readme-section">
+    <h2>📞 Contact</h2>
+    <ul>
+    <li>shawn_mana-ay@dlsu.edu.ph</li>
+    <li>raphael_matthew_azucena@dlsu.edu.ph</li>
+    <li>josebelle_delgado@dlsu.edu.ph</li>
+    <li>raphel_mercado@dlsu.edu.ph</li>
+    <li>aaron_pagayunan@dlsu.edu.ph</li>
+    </ul>
+    </div>
+    """, unsafe_allow_html=True)
+
+
+def main():
+    # st.sidebar.title("Navigation")
+    page = st.sidebar.radio("Go to", ["Team Members", "Project Documentation"])
+
+    if page == "Team Members":
+        show_members_page()
+    else:
+        show_readme_page()
+
+
+if __name__ == "__main__":
+    main()
