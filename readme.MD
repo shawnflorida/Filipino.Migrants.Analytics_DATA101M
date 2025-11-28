@@ -51,8 +51,8 @@ Filipino-Migrators-Dashboard/
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/shawnflorida/Filipino.Migrants.Analytics_DATA100M
-   cd Filipino.Migrants.Analytics_DATA100M
+   git clone https://github.com/shawnflorida/Filipino.Migrants.Analytics_DATA101M
+   cd Filipino.Migrants.Analytics_DATA101M
    ```
 
 2. **Install dependencies**
