@@ -3,6 +3,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import os
+import numpy as np
 
 # ---------- Page config ----------
 st.set_page_config(
@@ -12,15 +13,81 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-EXPLANATIONS = {
-    1995: "The Migrant Workers and Overseas Filipinos Act (RA 8042) changed how the Philippines manages and protects OFWs. This helped shape deployment patterns in this period.",
-    1997: "The Asian Financial Crisis affected many Asian economies. Some Filipinos looked for work abroad as local opportunities became less stable.",
-    2008: "The Global Financial Crisis shook job markets worldwide. Demand shifted, but many Filipinos still relied on overseas work for income.",
-}
+# ---------- Yearly explanations (by ranges) ----------
+EXPLANATION_RANGES = [
+    {
+        "start": 1988,
+        "end": 1994,
+        "text": (
+            "From 1988 to 1994, overseas work became a normalized strategy for many Filipino "
+            "households as the government’s labor export program responded to unemployment and "
+            "limited quality jobs at home."
+        ),
+    },
+    {
+        "start": 1995,
+        "end": 1999,
+        "text": (
+            "Between 1995 and 1999, the Migrant Workers and Overseas Filipinos Act (RA 8042) "
+            "reframed overseas employment by adding a stronger protection and regulation framework "
+            "for Filipino workers abroad."
+        ),
+    },
+    {
+        "start": 2000,
+        "end": 2007,
+        "text": (
+            "From 2000 to 2007, the Philippines further institutionalized large‑scale labor "
+            "migration, with deployments in the hundreds of thousands each year and remittances "
+            "supporting household consumption and national foreign exchange."
+        ),
+    },
+    {
+        "start": 2008,
+        "end": 2009,
+        "text": (
+            "In 2008–2009, the Global Financial Crisis disrupted job markets, but Filipino workers "
+            "remained in demand as employers adjusted hiring rather than fully reversing their "
+            "reliance on migrant labor."
+        ),
+    },
+    {
+        "start": 2010,
+        "end": 2019,
+        "text": (
+            "From 2010 to 2019, Filipino migration expanded and diversified, with more skilled and "
+            "professional workers going abroad while remittances continued to play a central role "
+            "in the Philippine economy."
+        ),
+    },
+    {
+        "start": 2020,
+        "end": 2021,
+        "text": (
+            "In 2020–2021, the COVID‑19 pandemic sharply reduced deployments and triggered mass "
+            "returns of OFWs as border closures and lockdowns disrupted global mobility."
+        ),
+    },
+    {
+        "start": 2022,
+        "end": 2022,
+        "text": (
+            "By 2022, overseas deployment began to rebound as borders reopened, and new policies "
+            "sought to integrate OFWs more explicitly into development and social protection plans."
+        ),
+    },
+]
+
 DEFAULT_EXPLANATION = (
-    "Migration in this year reflects ongoing economic gaps between the Philippines and destination "
-    "countries, plus established labor corridors for Filipino workers."
+    "Migration in this year reflects the interaction of domestic job shortages, global labor "
+    "demand, and well‑established networks linking Filipino workers to overseas opportunities."
 )
+
+def get_year_explanation(year: int) -> str:
+    for block in EXPLANATION_RANGES:
+        if block["start"] <= year <= block["end"]:
+            return block["text"]
+    return DEFAULT_EXPLANATION
 
 # ---------- Data loader ----------
 class DataLoader:
@@ -29,7 +96,9 @@ class DataLoader:
     def load_all_data():
         try:
             project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-            base_path = os.path.join(project_root, "data", "raph", "clean_migration_origin_destination.csv")
+            base_path = os.path.join(
+                project_root, "data", "raph", "clean_migration_origin_destination.csv"
+            )
             df = pd.read_csv(base_path)
             return {"main": df}
         except Exception as e:
@@ -255,8 +324,7 @@ cum_total_migrants = int(cum_total_row["cumulative_migrants"].iloc[0]) if not cu
 # --- Sidebar KPI: total migrant population up to selected year ---
 st.sidebar.markdown("---")
 st.sidebar.markdown("**Total Migrant Population (up to selected year)**")
-st.sidebar.markdown(f"## {cum_total_migrants:,}")  # bigger than ###
-
+st.sidebar.markdown(f"## {cum_total_migrants:,}")
 st.sidebar.caption(
     f"Population total as of **{selected_year}** based on all recorded "
     f"origin regions and destination countries."
@@ -284,7 +352,7 @@ total_migrants = int(df_summary["migrants"].sum()) if not df_summary.empty else 
 dest_label = selected_dest if selected_dest != "All countries" else "All Countries"
 origin_label = selected_origin if selected_origin != "All regions" else "All Regions"
 
-base_text = EXPLANATIONS.get(selected_year, DEFAULT_EXPLANATION)
+base_text = get_year_explanation(selected_year)
 
 if total_migrants == 0:
     zero_note = (
@@ -302,7 +370,6 @@ insight_text = (
     f"moving from **{origin_label}** to **{dest_label}** in **{selected_year}**."
     f"{zero_note}"
 )
-
 
 # ---------- Aggregated data for map ----------
 all_countries = (
@@ -356,14 +423,23 @@ fig.add_trace(
     )
 )
 
-# ---------- Orange lines from Philippines to top 10 ----------
+# ---------- Curved migration lines from Philippines to top 10 ----------
 ph_lat, ph_lon = 12.8797, 121.7740  # Philippines centroid
 
-line_lats = []
-line_lons = []
+def make_arc(lat1, lon1, lat2, lon2, n_points=80):
+    """Create a very visible curved arc between two points (lat/lon)."""
+    lats = np.linspace(lat1, lat2, n_points)
+    lons = np.linspace(lon1, lon2, n_points)
+    mid = n_points // 2
+    # strong bump so the curve clearly separates from coastlines
+    lat_bump = 18 if lat2 >= lat1 else -18
+    lats[mid] += lat_bump
+    return lats, lons
 
 for _, row in top_df.iterrows():
     dest = row["Destination"]
+    migrants_val = row["Migrants"]
+
     try:
         tmp = px.scatter_geo(
             pd.DataFrame({"country": [dest]}),
@@ -375,22 +451,41 @@ for _, row in top_df.iterrows():
     except Exception:
         continue
 
-    line_lats.extend([ph_lat, d_lat, None])
-    line_lons.extend([ph_lon, d_lon, None])
+    arc_lats, arc_lons = make_arc(ph_lat, ph_lon, d_lat, d_lon, n_points=80)
+    width = 2 + 5 * (migrants_val / top_df["Migrants"].max())
 
-if line_lats:
+    # glow
     fig.add_trace(
         go.Scattergeo(
-            lon=line_lons,
-            lat=line_lats,
+            lon=arc_lons,
+            lat=arc_lats,
             mode="lines",
-            line=dict(color="#f97316", width=4),
-            opacity=0.9,
+            line=dict(
+                color="rgba(56,189,248,0.4)",  # bright cyan with alpha
+                width=width + 2,
+            ),
+            opacity=1,
             showlegend=False,
             hoverinfo="skip",
         )
     )
-# ---------- Layout ----------
+    # core
+    fig.add_trace(
+        go.Scattergeo(
+            lon=arc_lons,
+            lat=arc_lats,
+            mode="lines",
+            line=dict(
+                color="#22d3ee",  # cyan
+                width=width,
+            ),
+            opacity=1,
+            showlegend=False,
+            hoverinfo="skip",
+        )
+    )
+
+# ---------- Layout: title + year badge ----------
 title_col, year_col = st.columns([3, 1])
 
 with title_col:
@@ -400,9 +495,12 @@ with title_col:
     )
 
 with year_col:
-    st.markdown("<br>", unsafe_allow_html=True)  # small vertical spacer
-    st.markdown(f" 🗓️ Selected year")
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("**Selected year**")
     st.markdown(f"# {selected_year}")
+
+# Make sure flow lines are drawn on top of the choropleth
+fig.data = tuple(sorted(fig.data, key=lambda tr: 0 if tr.type == "choropleth" else 1))
 
 st.plotly_chart(fig, use_container_width=True)
 
@@ -420,7 +518,7 @@ with st.container():
 if selected_dest == "All countries":
     top5 = all_countries.head(5).copy()
     if not top5.empty:
-        st.markdown("### 🏆 Top Destination Countries")
+        st.markdown("### Top Destination Countries")
         col1, col2, col3, col4, col5 = st.columns(5)
 
         cols = [col1, col2, col3, col4, col5]
@@ -431,33 +529,17 @@ if selected_dest == "All countries":
                     f"{int(row['Migrants']):,} migrants",
                 )
 
-color_max = all_countries["Migrants"].max() if not all_countries.empty else 0
-
-fig = px.choropleth(
-    all_countries,
-    locations="Destination",
-    locationmode="country names",
-    color="Migrants",
-    color_continuous_scale="Viridis",
-    range_color=(0, color_max),
-    labels={"Migrants": "Migrants"},
-)
-
-# share of migrants going to selected_dest (if not 'All countries')
+# year‑over‑year change text for selected destination
 dest_share_text = ""
-
 if selected_dest != "All countries" and total_migrants > 0:
     prev_year = selected_year - 1
     if prev_year in years:
-        prev_mask = (df["year"] == prev_year)
-
+        prev_mask = df["year"] == prev_year
         if selected_origin != "All regions":
             prev_mask &= df["origin_region"] == selected_origin
         if selected_dest != "All countries":
             prev_mask &= df["destination_pretty"] == selected_dest
-
         prev_total = int(df.loc[prev_mask, "migrants"].sum())
-
         if prev_total > 0:
             change_pct = (total_migrants - prev_total) / prev_total * 100
             direction = "increased" if change_pct >= 0 else "decreased"
@@ -465,7 +547,6 @@ if selected_dest != "All countries" and total_migrants > 0:
                 f" This destination’s migrants **{direction} by {abs(change_pct):.1f}%** "
                 f"compared with **{prev_year}** under the same filters."
             )
-
 
 st.markdown(
     f"There are **{total_migrants:,}** people coming from **{origin_label}** "
