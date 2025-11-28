@@ -8,21 +8,6 @@ def show_members_page():
     # Custom CSS for enhanced styling
     st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-    
-    * {
-        font-family: 'Inter', sans-serif;
-    }
-    
-    .main-header {
-        text-align: center;
-        padding: 1rem 0;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border-radius: 12px;
-        margin-bottom: 2rem;
-        color: white;
-    }
-    
     .member-card {
         background: white;
         padding: 1.5rem;
@@ -65,31 +50,14 @@ def show_members_page():
         margin: 0.2rem 0.3rem;
         box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
     }
-    
-    .search-box {
-        background: white;
-        padding: 1rem;
-        border-radius: 12px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        margin-bottom: 2rem;
-    }
-    
-  
-    
-
-    
     </style>
     """, unsafe_allow_html=True)
 
-    # Page header with gradient
+    # Page header
     st.markdown("""
         <h1 style="margin:0; font-size: 2.5rem;">👥 Project Team Members</h1>
         <p style="margin:0; opacity: 0.9; font-size: 1.1rem;">Group 3 • Final Project</p>
     """, unsafe_allow_html=True)
-
-  
-
-   
 
     # Team members data with icons and colors
     members = [
@@ -172,3 +140,4 @@ def show_members_page():
 
 
 show_members_page()
+
