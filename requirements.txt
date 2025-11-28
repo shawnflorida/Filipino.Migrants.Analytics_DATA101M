@@ -1,6 +1,5 @@
 
 numpy
-altair
 python-dateutil
 streamlit
 pandas
