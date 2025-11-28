@@ -1,8 +1,7 @@
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
+import altair as alt
 import numpy as np
-from matplotlib.ticker import FuncFormatter
 
 # ------------------------
 # Page meta + styling
@@ -18,8 +17,6 @@ st.markdown(
 # ------------------------
 # Load data
 # ------------------------
-
-
 @st.cache_data
 def load_data():
     base = "data"
@@ -40,11 +37,9 @@ def load_data():
     # Normalize sex column names to 'Male' and 'Female'
     sex_cols = {c.lower(): c for c in sex.columns}
     if "male" in sex_cols and "female" in sex_cols:
-        sex = sex.rename(
-            columns={sex_cols["male"]: "Male", sex_cols["female"]: "Female"})
+        sex = sex.rename(columns={sex_cols["male"]: "Male", sex_cols["female"]: "Female"})
 
     return occu, sex
-
 
 occu_df, sex_df = load_data()
 
@@ -58,13 +53,11 @@ if len(years) == 0:
     st.error("No years found in occupation dataset.")
     st.stop()
 
-selected_year = st.sidebar.selectbox(
-    "Select year", options=years, index=len(years) - 1)
+selected_year = st.sidebar.selectbox("Select year", options=years, index=len(years) - 1)
 
 occu_columns = [c for c in occu_df.columns if c != "year"]
 default_top_n = 12
-top_n = st.sidebar.slider("Number of occupations to display",
-                          min_value=3, max_value=15, value=default_top_n)
+top_n = st.sidebar.slider("Number of occupations to display", min_value=3, max_value=15, value=default_top_n)
 
 occupation_multiselect = st.sidebar.multiselect(
     "Filter occupations",
@@ -72,10 +65,8 @@ occupation_multiselect = st.sidebar.multiselect(
     default=[]
 )
 
-show_estimate_note = st.sidebar.checkbox(
-    "Show approximation note (gender split estimate)", value=True)
-normalize_option = st.sidebar.radio(
-    "Show counts or percentages:", ("Counts", "Percent of total (selected year)"))
+show_estimate_note = st.sidebar.checkbox("Show approximation note (gender split estimate)", value=True)
+normalize_option = st.sidebar.radio("Show counts or percentages:", ("Counts", "Percent of total (selected year)"))
 
 st.sidebar.markdown("---")
 st.sidebar.write(
@@ -96,8 +87,7 @@ occ_year.columns = ["Occupation", "Count"]
 occ_year = occ_year.sort_values("Count", ascending=False)
 
 if occupation_multiselect:
-    display_df = occ_year[occ_year["Occupation"].isin(
-        occupation_multiselect)].copy()
+    display_df = occ_year[occ_year["Occupation"].isin(occupation_multiselect)].copy()
 else:
     display_df = occ_year.head(top_n).copy()
 
@@ -106,13 +96,11 @@ else:
 # ------------------------
 sex_row = sex_df[sex_df["year"] == selected_year]
 if sex_row.shape[0] == 0:
-    st.warning(
-        f"Gender totals not available for {selected_year}. Using overall proportions from latest year.")
+    st.warning(f"Gender totals not available for {selected_year}. Using overall proportions from latest year.")
     sex_row = sex_df.iloc[[-1]]
 
 if "Male" not in sex_row.columns or "Female" not in sex_row.columns:
-    st.error(
-        "Sex totals table must contain 'Male' and 'Female' columns (case-insensitive).")
+    st.error("Sex totals table must contain 'Male' and 'Female' columns (case-insensitive).")
     st.stop()
 
 male_total = int(sex_row["Male"].values[0])
@@ -145,68 +133,54 @@ else:
     x_title = "Number of migrants"
 
 # ------------------------
-# Mirrored bar chart with Matplotlib
+# Mirrored bar chart
 # ------------------------
 st.subheader("👥 Gender Distribution by Occupation — Mirrored View")
-
-# Prepare data for mirrored chart
 mirror_df = est.copy()
-if normalize_option == "Percent of total (selected year)":
-    mirror_df["Female_mirror"] = -mirror_df["Female_pct"]
-    mirror_df["Male_mirror"] = mirror_df["Male_pct"]
-    male_values = mirror_df["Male_pct"].values
-    female_values = mirror_df["Female_pct"].values
-else:
-    mirror_df["Female_mirror"] = -mirror_df["Female"]
-    mirror_df["Male_mirror"] = mirror_df["Male"]
-    male_values = mirror_df["Male"].values
-    female_values = mirror_df["Female"].values
+mirror_df["Female_mirror"] = -mirror_df[value_col_f]
+mirror_df["Male_mirror"] = mirror_df[value_col]
+sorted_occ = mirror_df.sort_values("Count", ascending=True)["Occupation"].tolist()
+mirror_df["Occupation"] = pd.Categorical(mirror_df["Occupation"], categories=sorted_occ, ordered=True)
 
-# Sort occupations by total count
-mirror_df = mirror_df.sort_values("Count", ascending=True)
-occupations = mirror_df["Occupation"].tolist()
+left_max = int(mirror_df[value_col_f].abs().max()) if mirror_df[value_col_f].abs().max() else 0
+right_max = int(mirror_df[value_col].abs().max()) if mirror_df[value_col].abs().max() else 0
+max_val = max(left_max, right_max, 1)
+x_axis = alt.Axis(title=x_title, labelExpr="abs(datum.value)")
+x_scale = alt.Scale(domain=[-max_val, max_val])
 
-# Create mirrored bar chart
-fig, ax = plt.subplots(figsize=(12, 8 + max(0, (len(occupations) - 10) * 0.3)))
+female_bar = alt.Chart(mirror_df).mark_bar(size=18).encode(
+    x=alt.X("Female_mirror:Q", title=x_title, scale=x_scale, axis=x_axis, stack=None),
+    y=alt.Y("Occupation:N", sort=sorted_occ, title=None),
+    color=alt.value("#B266FF"),
+    tooltip=[alt.Tooltip("Occupation:N"), alt.Tooltip(value_col_f + ":Q", title="Female", format=",")]
+)
 
-y_pos = np.arange(len(occupations))
-bar_height = 0.7
+male_bar = alt.Chart(mirror_df).mark_bar(size=18).encode(
+    x=alt.X("Male_mirror:Q", title=x_title, scale=x_scale, axis=x_axis, stack=None),
+    y=alt.Y("Occupation:N", sort=sorted_occ, title=None),
+    color=alt.value("#2AA198"),
+    tooltip=[alt.Tooltip("Occupation:N"), alt.Tooltip(value_col + ":Q", title="Male", format=",")]
+)
 
-# Create bars
-male_bars = ax.barh(y_pos, mirror_df["Male_mirror"].values, bar_height,
-                    color='#2AA198', label='Male', edgecolor='white')
-female_bars = ax.barh(y_pos, mirror_df["Female_mirror"].values, bar_height,
-                      color='#B266FF', label='Female', edgecolor='white')
+female_text = alt.Chart(mirror_df).mark_text(align="right", dx=-5, color="gray").encode(
+    x=alt.X("Female_mirror:Q", stack=None),
+    y=alt.Y("Occupation:N", sort=sorted_occ),
+    text=alt.Text(value_col_f + ":Q", format=",")
+)
 
-# Add value labels
-for i, (male_val, female_val) in enumerate(zip(male_values, female_values)):
-    if normalize_option == "Percent of total (selected year)":
-        male_text = f"{male_val:.1f}%"
-        female_text = f"{female_val:.1f}%"
-    else:
-        male_text = f"{male_val:,}"
-        female_text = f"{female_val:,}"
+male_text = alt.Chart(mirror_df).mark_text(align="left", dx=5, color="gray").encode(
+    x=alt.X("Male_mirror:Q", stack=None),
+    y=alt.Y("Occupation:N", sort=sorted_occ),
+    text=alt.Text(value_col + ":Q", format=",")
+)
 
-    ax.text(male_val + (max(male_values) * 0.01), i, male_text,
-            va='center', ha='left', fontsize=9, color='gray')
-    ax.text(-female_val - (max(female_values) * 0.01), i, female_text,
-            va='center', ha='right', fontsize=9, color='gray')
+center_rule = alt.Chart(pd.DataFrame({"x": [0]})).mark_rule(color="gray", strokeWidth=1).encode(x="x:Q")
 
-# Customize the chart
-ax.axvline(0, color='gray', linewidth=1)
-ax.set_yticks(y_pos)
-ax.set_yticklabels(occupations)
-ax.set_xlabel(x_title)
-ax.legend()
-
-# Format x-axis for percentages or counts
-if normalize_option == "Percent of total (selected year)":
-    ax.xaxis.set_major_formatter(FuncFormatter(lambda x, p: f'{abs(x):.0f}%'))
-else:
-    ax.xaxis.set_major_formatter(FuncFormatter(lambda x, p: f'{abs(x):,}'))
-
-plt.tight_layout()
-st.pyplot(fig)
+chart_height = 420 + max(0, (len(sorted_occ) - 10) * 30)
+mirrored_chart = (female_bar + male_bar + female_text + male_text + center_rule).properties(
+    height=chart_height, width=900
+)
+st.altair_chart(mirrored_chart, use_container_width=True)
 
 if show_estimate_note:
     st.info(
@@ -225,7 +199,7 @@ st.info(
 st.markdown("---")
 
 # ------------------------
-# Occupation Trends with Matplotlib
+# Occupation Trends
 # ------------------------
 st.subheader("Occupation Trends (Selected Occupations)")
 
@@ -238,69 +212,105 @@ occu_ts["Occupation"] = occu_ts["Occupation"].astype(str)
 # ------------------------
 # Multiselect filter and top N / show all logic
 # ------------------------
-occupation_multiselect = st.multiselect(
-    "Select occupations (leave empty to show top N)",
-    options=sorted(occu_columns),
-    default=[]
-)
+# Enhanced occupation selector with quick actions and state sync
+options = sorted(occu_columns)
+
+# Initialize session state for selector
+if "occ_sel" not in st.session_state:
+    st.session_state["occ_sel"] = []
+
+with st.container():
+    st.write("Select occupations for the trend chart:")
+    col_a, col_b, col_c = st.columns([3, 1, 1])
+
+    with col_a:
+        st.multiselect(
+            "Select occupations (leave empty to show top N)",
+            options=options,
+            default=st.session_state["occ_sel"],
+            key="occ_sel",
+            placeholder="Type to search occupations..."
+        )
+
+    # Compute latest-year top 5 for quick select
+    latest_year = occu_df["year"].max()
+    occ_year_latest = occu_df[occu_df["year"] == latest_year].drop(columns="year")
+    top5_latest = occ_year_latest.iloc[0].sort_values(ascending=False).head(5).index.tolist()
+
+    with col_b:
+        if st.button("Top 5 (latest year)"):
+            st.session_state["occ_sel"] = [o for o in top5_latest if o in options]
+
+    with col_c:
+        if st.button("Clear selection"):
+            st.session_state["occ_sel"] = []
+
+# Use the unified selection downstream
+occupation_multiselect = st.session_state["occ_sel"]
 
 show_all = st.checkbox("Show all occupations", value=True)
 
 # Determine which occupations to display
 if show_all:
     if occupation_multiselect:
-        ts_plot = occu_ts[occu_ts["Occupation"].isin(
-            occupation_multiselect)].copy()
-        top_occ = occupation_multiselect[:5]
+        ts_plot = occu_ts[occu_ts["Occupation"].isin(occupation_multiselect)].copy()
+        top_occ = occupation_multiselect[:5]  # always define top_occ
     else:
         ts_plot = occu_ts.copy()
         latest_year = occu_df["year"].max()
-        occ_year_latest = occu_df[occu_df["year"]
-                                  == latest_year].drop(columns="year")
-        top_occ = occ_year_latest.iloc[0].sort_values(
-            ascending=False).head(5).index.tolist()
+        occ_year_latest = occu_df[occu_df["year"] == latest_year].drop(columns="year")
+        top_occ = occ_year_latest.iloc[0].sort_values(ascending=False).head(5).index.tolist()
 else:
     latest_year = occu_df["year"].max()
-    occ_year_latest = occu_df[occu_df["year"]
-                              == latest_year].drop(columns="year")
-
+    occ_year_latest = occu_df[occu_df["year"] == latest_year].drop(columns="year")
+    
     if occupation_multiselect:
         top_occ = occupation_multiselect[:5]
+        rest = [occ for occ in occupation_multiselect if occ not in top_occ]
     else:
-        top_occ = occ_year_latest.iloc[0].sort_values(
-            ascending=False).head(5).index.tolist()
-
-    ts_plot = occu_ts[occu_ts["Occupation"].isin(top_occ)].copy()
+        top_occ = occ_year_latest.iloc[0].sort_values(ascending=False).head(5).index.tolist()
+        rest = [occ for occ in occu_columns if occ not in top_occ]
+    
+    ts_plot_top = occu_ts[occu_ts["Occupation"].isin(top_occ)].copy()
+    
+    if rest:
+        dummy_df = pd.DataFrame({
+            "year": [occu_ts["year"].min()],
+            "Occupation": [f"...+{len(rest)} more"],
+            "Count": [0]
+        })
+        ts_plot = pd.concat([ts_plot_top, dummy_df], ignore_index=True)
+    else:
+        ts_plot = ts_plot_top.copy()
 
 # ------------------------
-# Plot line chart with Matplotlib
+# Legend order
+# ------------------------
+all_occupations = ts_plot["Occupation"].unique().tolist()
+legend_order = [occ for occ in top_occ if occ in all_occupations] + \
+               sorted([occ for occ in all_occupations if occ not in top_occ])
+
+# ------------------------
+# Plot line chart
 # ------------------------
 if not ts_plot.empty:
-    fig2, ax2 = plt.subplots(figsize=(12, 8))
-
-    # Create color map for occupations
-    occupations_to_plot = ts_plot["Occupation"].unique()
-    colors = plt.cm.Set3(np.linspace(0, 1, len(occupations_to_plot)))
-
-    for i, occupation in enumerate(occupations_to_plot):
-        occ_data = ts_plot[ts_plot["Occupation"]
-                           == occupation].sort_values("year")
-        ax2.plot(occ_data["year"], occ_data["Count"],
-                 marker='o', linewidth=2.5, markersize=6,
-                 color=colors[i], label=occupation)
-
-    ax2.set_xlabel("Year")
-    ax2.set_ylabel("Count")
-    ax2.set_title("Occupation Trends Over Time")
-    ax2.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
-    ax2.grid(True, alpha=0.3)
-
-    # Format y-axis with commas
-    ax2.yaxis.set_major_formatter(FuncFormatter(lambda x, p: f'{x:,.0f}'))
-
-    plt.xticks(rotation=45)
-    plt.tight_layout()
-    st.pyplot(fig2)
+    line_chart = (
+        alt.Chart(ts_plot)
+        .mark_line(point=True)
+        .encode(
+            x=alt.X("year:O", title="Year"),
+            y=alt.Y("Count:Q", title="Count"),
+            color=alt.Color(
+                "Occupation:N",
+                sort=legend_order,
+                legend=alt.Legend(title="Occupation", symbolLimit=5, columns=1)
+            ),
+            tooltip=["year", "Occupation", "Count"]
+        )
+        .properties(height=420)
+        .interactive()
+    )
+    st.altair_chart(line_chart, use_container_width=True)
 else:
     st.warning("No data available for the selected occupations/year.")
 
@@ -312,86 +322,39 @@ st.info(
 )
 
 # ------------------------
-# Bottom row charts with Matplotlib
+# Bottom row charts
 # ------------------------
 col3, col4 = st.columns(2)
 
 with col3:
     st.subheader("Top Occupations (Selected Year)")
-
-    # Prepare data for horizontal bar chart
-    top_show_df = est[["Occupation", "Count"]].sort_values(
-        "Count", ascending=True).head(top_n)
-
-    fig3, ax3 = plt.subplots(figsize=(10, 8))
-    y_pos = np.arange(len(top_show_df))
-
-    bars = ax3.barh(y_pos, top_show_df["Count"],
-                    color='#4C72B0', alpha=0.7, edgecolor='white')
-
-    ax3.set_yticks(y_pos)
-    ax3.set_yticklabels(top_show_df["Occupation"])
-    ax3.set_xlabel("Count")
-    ax3.set_title(f"Top {top_n} Occupations in {selected_year}")
-
-    # Add value labels on bars
-    for i, bar in enumerate(bars):
-        width = bar.get_width()
-        ax3.text(width + (max(top_show_df["Count"]) * 0.01), bar.get_y() + bar.get_height()/2,
-                 f'{width:,}', ha='left', va='center', fontsize=9)
-
-    ax3.xaxis.set_major_formatter(FuncFormatter(lambda x, p: f'{x:,.0f}'))
-    plt.tight_layout()
-    st.pyplot(fig3)
-
+    top_show_df = est[["Occupation", "Count"]].sort_values("Count", ascending=False).head(top_n)
+    top_chart = alt.Chart(top_show_df).mark_bar().encode(
+        x=alt.X("Count:Q", title="Count"),
+        y=alt.Y("Occupation:N", sort='-x'),
+        tooltip=["Occupation", "Count"],
+        color=alt.value("#4C72B0")
+    ).properties(height=420)
+    st.altair_chart(top_chart, use_container_width=True)
     st.info(
-        "Ranks occupations by total count. "
-        "The top occupation represents 15–20% of all counts; the top 5 together exceed 55%, "
-        "highlighting workforce concentration in key roles."
+    "Ranks occupations by total count. "
+    "The top occupation represents 15–20% of all counts; the top 5 together exceed 55%, "
+    "highlighting workforce concentration in key roles."
     )
 
 with col4:
     st.subheader("Gender Trend")
-
-    # Prepare gender data
-    gender_long = sex_df.melt(
-        id_vars="year", var_name="Gender", value_name="Count")
-
-    fig4, ax4 = plt.subplots(figsize=(10, 8))
-
-    # Plot area chart
-    years = gender_long["year"].unique()
-    male_data = gender_long[gender_long["Gender"]
-                            == "Male"].sort_values("year")
-    female_data = gender_long[gender_long["Gender"]
-                              == "Female"].sort_values("year")
-
-    ax4.fill_between(
-        years, female_data["Count"], color='#B266FF', alpha=0.6, label='Female')
-    ax4.fill_between(years, male_data["Count"],
-                     color='#2AA198', alpha=0.6, label='Male')
-
-    # Add line plots on top
-    ax4.plot(years, female_data["Count"], color='#B266FF', linewidth=2)
-    ax4.plot(years, male_data["Count"], color='#2AA198', linewidth=2)
-
-    ax4.set_xlabel("Year")
-    ax4.set_ylabel("Count")
-    ax4.set_title("Gender Distribution Over Time")
-    ax4.legend()
-    ax4.grid(True, alpha=0.3)
-
-    # Format y-axis with commas
-    ax4.yaxis.set_major_formatter(FuncFormatter(lambda x, p: f'{x:,.0f}'))
-
-    plt.xticks(rotation=45)
-    plt.tight_layout()
-    st.pyplot(fig4)
-
+    gender_long = sex_df.melt(id_vars="year", var_name="Gender", value_name="Count")
+    gender_chart = alt.Chart(gender_long).mark_area(opacity=0.6).encode(
+        x=alt.X("year:O", title="Year"),
+        y=alt.Y("Count:Q", title="Count"),
+        color=alt.Color("Gender:N", scale=alt.Scale(domain=["Male", "Female"], range=["#2AA198", "#B266FF"]))
+    ).properties(height=420)
+    st.altair_chart(gender_chart, use_container_width=True)
     st.info(
-        "Illustrates male and female population over time. "
-        "In the latest year, females are ~55%, males ~45%. "
-        "Male counts have increased >20% in several years, slightly narrowing the gender gap."
+    "Illustrates male and female population over time. "
+    "In the latest year, females are ~55%, males ~45%. "
+    "Male counts have increased >20% in several years, slightly narrowing the gender gap."
     )
 
 # ------------------------
@@ -402,10 +365,8 @@ st.subheader("Data & Export")
 with st.expander("Show occupation totals (selected year)"):
     st.dataframe(occ_year.style.format({"Count": "{:,}"}))
 with st.expander("Show estimated gender-by-occupation (for selected year)"):
-    display_est = est[["Occupation", "Count", "Male", "Female"]
-                      ].copy().rename(columns={"Count": "Total"})
-    st.dataframe(display_est.style.format(
-        {"Total": "{:,}", "Male": "{:,}", "Female": "{:,}"}))
+    display_est = est[["Occupation", "Count", "Male", "Female"]].copy().rename(columns={"Count": "Total"})
+    st.dataframe(display_est.style.format({"Total": "{:,}", "Male": "{:,}", "Female": "{:,}"}))
 
 csv = display_est.to_csv(index=False)
 st.download_button(
@@ -414,6 +375,3 @@ st.download_button(
     file_name=f"estimated_occu_gender_{selected_year}.csv",
     mime="text/csv"
 )
-
-# Clean up matplotlib figures
-plt.close('all')
