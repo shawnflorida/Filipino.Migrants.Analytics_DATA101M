@@ -83,6 +83,7 @@ DEFAULT_EXPLANATION = (
     "demand, and well‑established networks linking Filipino workers to overseas opportunities."
 )
 
+
 def get_year_explanation(year: int) -> str:
     for block in EXPLANATION_RANGES:
         if block["start"] <= year <= block["end"]:
@@ -90,12 +91,15 @@ def get_year_explanation(year: int) -> str:
     return DEFAULT_EXPLANATION
 
 # ---------- Data loader ----------
+
+
 class DataLoader:
     @staticmethod
     @st.cache_data
     def load_all_data():
         try:
-            project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            project_root = os.path.dirname(
+                os.path.dirname(os.path.abspath(__file__)))
             base_path = os.path.join(
                 project_root, "data", "raph", "clean_migration_origin_destination.csv"
             )
@@ -106,6 +110,8 @@ class DataLoader:
             st.stop()
 
 # ---------- Data processor ----------
+
+
 class DataProcessor:
     def __init__(self, data_dict):
         self.data = data_dict
@@ -270,7 +276,8 @@ class DataProcessor:
     def prepare_main_df(self):
         df = self.data["main"].copy()
         df["origin_region"] = df["origin_region"].astype(str).str.strip()
-        df["destination_country"] = df["destination_country"].astype(str).str.strip()
+        df["destination_country"] = df["destination_country"].astype(
+            str).str.strip()
 
         df["destination_country"] = df["destination_country"].replace({
             "PHILIPPINES": "Philippines",
@@ -288,6 +295,7 @@ class DataProcessor:
         )
         return df
 
+
 # ---------- Load data ----------
 data_dict = DataLoader.load_all_data()
 processor = DataProcessor(data_dict)
@@ -297,13 +305,7 @@ df = processor.prepare_main_df()
 st.sidebar.header("Filters")
 
 years = sorted(df["year"].unique())
-selected_year = st.sidebar.slider(
-    "Year",
-    min_value=int(min(years)),
-    max_value=int(max(years)),
-    value=int(max(years)),
-    step=1,
-)
+selected_year = st.sidebar.selectbox("Year", years, index=len(years)-1)
 
 origin_options = ["All regions"] + sorted(df["origin_region"].unique())
 selected_origin = st.sidebar.selectbox("Origin Region", origin_options)
@@ -319,7 +321,8 @@ df_year_totals = (
 )
 df_year_totals["cumulative_migrants"] = df_year_totals["migrants"].cumsum()
 cum_total_row = df_year_totals[df_year_totals["year"] == selected_year]
-cum_total_migrants = int(cum_total_row["cumulative_migrants"].iloc[0]) if not cum_total_row.empty else 0
+cum_total_migrants = int(
+    cum_total_row["cumulative_migrants"].iloc[0]) if not cum_total_row.empty else 0
 
 # --- Sidebar KPI: total migrant population up to selected year ---
 st.sidebar.markdown("---")
@@ -348,7 +351,8 @@ if selected_dest != "All countries":
     summary_mask &= df["destination_pretty"] == selected_dest
 
 df_summary = df[summary_mask]
-total_migrants = int(df_summary["migrants"].sum()) if not df_summary.empty else 0
+total_migrants = int(df_summary["migrants"].sum()
+                     ) if not df_summary.empty else 0
 dest_label = selected_dest if selected_dest != "All countries" else "All Countries"
 origin_label = selected_origin if selected_origin != "All regions" else "All Regions"
 
@@ -377,7 +381,8 @@ all_countries = (
     .sum()
     .rename(columns={"destination_pretty": "Destination", "migrants": "Migrants"})
 )
-all_countries = all_countries[all_countries["Migrants"] > 0].sort_values("Migrants", ascending=False)
+all_countries = all_countries[all_countries["Migrants"] > 0].sort_values(
+    "Migrants", ascending=False)
 
 top_n = 10
 top_df = all_countries.head(top_n)
@@ -397,15 +402,19 @@ fig.update_geos(
     coastlinecolor="#1f2937",
     showland=True,
     landcolor="#020617",
+    bgcolor='rgba(0,0,0,0)',
+
     showcountries=True,
     countrycolor="#1f2937",
 )
 fig.update_layout(
-    paper_bgcolor="#020617",
-    plot_bgcolor="#020617",
-    font=dict(color="#e5e7eb"),
+    paper_bgcolor="rgba(0,0,0,0)",
+    plot_bgcolor="rgba(0,0,0,0)",
+    font=dict(color="#e4e6eb"),
     margin=dict(l=0, r=0, t=0, b=0),
-    coloraxis_colorbar=dict(title="Migrants", tickfont=dict(color="#e5e7eb")),
+    coloraxis_colorbar=dict(title="Migrants", tickfont=dict(color="#e4e6eb")),
+    xaxis=dict(gridcolor="#1e3a8a", color="#94a3b8"),
+    yaxis=dict(gridcolor="#1e3a8a", color="#94a3b8"),
 )
 
 # ---------- Labels on top 10 ----------
@@ -426,6 +435,7 @@ fig.add_trace(
 # ---------- Curved migration lines from Philippines to top 10 ----------
 ph_lat, ph_lon = 12.8797, 121.7740  # Philippines centroid
 
+
 def make_arc(lat1, lon1, lat2, lon2, n_points=80):
     """Create a very visible curved arc between two points (lat/lon)."""
     lats = np.linspace(lat1, lat2, n_points)
@@ -435,6 +445,7 @@ def make_arc(lat1, lon1, lat2, lon2, n_points=80):
     lat_bump = 18 if lat2 >= lat1 else -18
     lats[mid] += lat_bump
     return lats, lons
+
 
 for _, row in top_df.iterrows():
     dest = row["Destination"]
@@ -500,7 +511,8 @@ with year_col:
     st.markdown(f"# {selected_year}")
 
 # Make sure flow lines are drawn on top of the choropleth
-fig.data = tuple(sorted(fig.data, key=lambda tr: 0 if tr.type == "choropleth" else 1))
+fig.data = tuple(
+    sorted(fig.data, key=lambda tr: 0 if tr.type == "choropleth" else 1))
 
 st.plotly_chart(fig, use_container_width=True)
 
